@@ -1,0 +1,81 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native"]
+  output        = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+model User {
+  userId      Int       @id @default(autoincrement()) @map("user_id")
+  firstName   String    @map("first_name") @db.VarChar(30)
+  lastName    String    @map("last_name") @db.VarChar(150)
+  email       String    @unique @db.VarChar(255)
+  phoneNumber String    @unique @map("phone_number") @db.VarChar(10)
+  password    String    @db.VarChar(128)
+  dateJoined  DateTime  @default(now()) @map("date_joined")
+  accounts    Account[]
+
+  @@map("users")
+}
+
+model Account {
+  accountNumber       String        @id @map("account_number") @db.VarChar(10)
+  user                User          @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  userId              Int           @map("user_id")
+  accountType         AccountType   @map("account_type")
+  balance             Decimal       @default(0.00) @db.Decimal(10, 2)
+  dateCreated         DateTime      @default(now()) @map("date_created")
+  status              AccountStatus
+  transactions        Transaction[]
+  relatedTransactions Transaction[] @relation("RelatedAccount")
+  createdAt           DateTime      @default(now()) @map("created_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+
+  @@map("accounts")
+}
+
+model Transaction {
+  transactionId        Int             @id @default(autoincrement()) @map("transaction_id")
+  account              Account         @relation(fields: [accountNumber], references: [accountNumber], onDelete: Cascade)
+  accountNumber        String          @map("account_number") @db.VarChar(10)
+  relatedAccount       Account?        @relation("RelatedAccount", fields: [relatedAccountNumber], references: [accountNumber], onDelete: SetNull)
+  relatedAccountNumber String?         @map("related_account") @db.VarChar(10)
+  type                 TransactionType
+  amount               Decimal         @db.Decimal(10, 2)
+  timestamp            DateTime        @default(now())
+  balanceAfter         Decimal         @map("balance_after") @db.Decimal(10, 2)
+  description          String?         @db.Text
+
+  @@index([timestamp])
+  @@index([type])
+  @@map("transactions")
+}
+
+enum AccountType {
+  SAVINGS @map("savings")
+  CURRENT @map("current")
+}
+
+enum AccountStatus {
+  ACTIVE   @map("active")
+  INACTIVE @map("inactive")
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+}
