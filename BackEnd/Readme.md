@@ -142,7 +142,46 @@ export function checkUserAccess(req, res, next)
 
 ## **📋 Data Models & Relationships**
 
-### **🗂️ Database Schema**
+### **�️ Entity Relationship Diagram (ERD)**
+
+```mermaid
+erDiagram
+  USERS {
+    INT user_id PK
+    VARCHAR first_name
+    VARCHAR last_name
+    VARCHAR email
+    VARCHAR phone_number
+    VARCHAR password
+    DATETIME date_joined
+  }
+  ACCOUNTS {
+    VARCHAR account_number PK
+    INT user_id FK
+    ENUM account_type
+    DECIMAL balance
+    DATETIME date_created
+    ENUM status
+    DATETIME created_at
+    DATETIME updated_at
+  }
+  TRANSACTIONS {
+    INT transaction_id PK
+    VARCHAR account_number FK
+    VARCHAR related_account FK
+    ENUM type
+    DECIMAL amount
+    DATETIME timestamp
+    DECIMAL balance_after
+    TEXT description
+  }
+
+  USERS ||--o{ ACCOUNTS : "has"
+  ACCOUNTS ||--o{ TRANSACTIONS : "has"
+  ACCOUNTS ||--o{ TRANSACTIONS : "related"
+```
+
+### **�🗂️ Database Schema**
 
 #### **Users Table (`users`)**
 ```sql
