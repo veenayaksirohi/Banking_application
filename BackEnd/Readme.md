@@ -284,11 +284,10 @@ curl -X POST http://localhost:3000/accounts \
 ```
 
 #### **Make a Deposit**
-```bash
-curl -X POST http://localhost:3000/accounts/1234567890/transactions/deposit \
-  -H "Content-Type: application/json" \
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \
   -d '{
+
+### Entity Relationship Diagram (ERD)
     "amount": 1500.00,
     "description": "Monthly salary deposit"
   }'
