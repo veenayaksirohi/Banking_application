@@ -6,12 +6,9 @@ This document provides comprehensive details for the **Simple Banking Applicatio
 ## **Overview**
 
 - **Base URL**: `http://localhost:3000`
-- **API Version**: v2.0
 - **Authentication**: JWT Bearer tokens via `/auth/login`
 - **Database**: PostgreSQL with Prisma ORM
 - **Testing**: Comprehensive automated test suite with 28/28 tests passing
-- **Documentation**: Real-time API documentation available
-- **Environment**: Development/Production ready
 
 ***
 
