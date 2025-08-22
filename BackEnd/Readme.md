@@ -1,16 +1,15 @@
 
-# **Banking API Documentation v2.0**
 
-This document provides comprehensive details for the **Simple Banking Application API**. All endpoints have been thoroughly tested and verified with 100% test coverage across 28 comprehensive test scenarios.
+# Simple Banking API
 
-## **Overview**
+This is a personal project demonstrating a simple banking API with user, account, and transaction management. All endpoints are tested and verified.
 
-- **Base URL**: `http://localhost:3000`
-- **Authentication**: JWT Bearer tokens via `/auth/login`
-- **Database**: PostgreSQL with Prisma ORM
-- **Testing**: Comprehensive automated test suite with 28/28 tests passing
 
-***
+**Base URL:** `http://localhost:3000`
+**Authentication:** JWT Bearer tokens
+**Database:** PostgreSQL (Prisma ORM)
+
+
 
 ## **✅ IMPLEMENTED ENDPOINTS**
 
@@ -32,7 +31,7 @@ This document provides comprehensive details for the **Simple Banking Applicatio
 - Login with phoneNumber + password
 - Returns JWT token valid for 1 hour
 
-***
+
 
 ### **👤 User Management** (Auth Required)
 | Method | Endpoint | Description | Request Body | Response | Status Codes |
@@ -137,9 +136,11 @@ export function checkUserAccess(req, res, next)
 
 ***
 
-## **📋 Data Models & Relationships**
 
-### **�️ Entity Relationship Diagram (ERD)**
+## Data Models & ERD
+
+
+### Entity Relationship Diagram (ERD)
 
 ```mermaid
 erDiagram
@@ -244,65 +245,7 @@ npx prisma generate
 npm run dev
 ```
 
-### **2. API Testing Workflow**
 
-#### **Register a User**
-```bash
-curl -X POST http://localhost:3000/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "firstName": "John",
-    "lastName": "Doe", 
-    "email": "john.doe@example.com",
-    "phoneNumber": "9876543210",
-    "password": "securepassword123"
-  }'
-```
-
-#### **Login**
-```bash
-curl -X POST http://localhost:3000/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "john.doe@example.com",
-    "password": "securepassword123"
-  }'
-```
-
-#### **Create Savings Account**
-```bash
-curl -X POST http://localhost:3000/accounts \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{
-    "accountType": "SAVINGS",
-    "balance": 5000.00
-  }'
-```
-
-#### **Make a Deposit**
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{
-
-### Entity Relationship Diagram (ERD)
-    "amount": 1500.00,
-    "description": "Monthly salary deposit"
-  }'
-```
-
-#### **Transfer Money**
-```bash
-curl -X POST http://localhost:3000/accounts/1234567890/transactions/transfer \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
-  -d '{
-    "toAccountNumber": "0987654321",
-    "amount": 750.00,
-    "description": "Rent payment"
-  }'
-```
-
-***
 
 ## **🧪 Testing & Quality Assurance**
 
@@ -478,16 +421,3 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ***
 
 
-## **🏁 Conclusion**
-
-The **Banking API v2.0** is a **production-ready**, **fully-tested** RESTful API that provides complete banking functionality including user management, account operations, and secure transaction processing. With **100% test coverage** and **comprehensive security measures**, this API is ready for deployment in banking and financial applications.
-
-
-**Key Highlights:**
-- 🏆 **16 fully implemented endpoints**
-- 🏆 **28/28 automated tests passing**
-- 🏆 **ACID-compliant transaction processing**
-- 🏆 **JWT-based security architecture**
-- 🏆 **Production-ready codebase**
-
-*This API successfully demonstrates enterprise-level banking application development with modern Node.js technologies.*
