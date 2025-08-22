@@ -8,14 +8,14 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Step 4: Copy the rest of the project
+# Step 4: Copy the rest of the project files
 COPY . .
 
-# Step 6: Expose port for Node.js app
+# Step 5: Generate Prisma client after code and dependencies are present
+
+# Step 6: Expose necessary ports
 EXPOSE 3000
 EXPOSE 5432
-
-
 
 # Step 7: Start the app
 CMD ["npm", "run", "prod"]
