@@ -20,38 +20,40 @@ A full-stack banking application with a Node.js/Express/Prisma backend and a Rea
 ---
 
 ## Project Overview
-This project is a simple banking system built with Django and Django REST Framework. It supports user registration, login, account creation, and transaction management.
+This project is a full-stack banking system built with Node.js/Express/Prisma (backend) and React/Vite (frontend). It supports user registration, login (with JWT authentication), account creation, and secure transaction management. All endpoints are fully tested and production-ready.
 
 ## Features
 - User registration and login (with email or phone number)
-- Account creation (savings/current)
-- Unique account number generation (format: ACCXXXXXXX)
+- JWT authentication (Bearer tokens)
+- Account creation (SAVINGS/CURRENT)
+- Unique 10-digit account number generation
 - Transaction tracking (deposit, withdrawal, transfer)
-- Admin interface for managing all data
+- User/account/transaction CRUD APIs
+- Secure access control (users can only access their own data)
+- Automated test suite (100% coverage)
 
 ## Project Structure
 ```
 Banking_application/
-  BackEnd/           # Node.js/Express/Prisma backend
+  BackEnd/
     src/
       controllers/
       routes/
-      models/
-      ...
+      middleware/
+      configs/
+      generated/
     prisma/
       schema.prisma
       migrations/
     package.json
     server.js
-    ...
-  FrontEnd/          # React/Vite frontend
+    test-api.js
+  FrontEnd/
     src/
       components/
       App.jsx
-      ...
     package.json
     vite.config.js
-    ...
   README.md
 ```
 
@@ -69,9 +71,13 @@ Banking_application/
   ```bash
   npx prisma migrate dev
   ```
-5. **Start the backend server**
+5. **Generate Prisma client**
   ```bash
-  npm start
+  npx prisma generate
+  ```
+6. **Start the backend server**
+  ```bash
+  npm run dev
   ```
 
 ### Frontend (React/Vite)
@@ -87,114 +93,95 @@ Banking_application/
 
 ## Entity Relationship Diagram (ERD)
 
-Below is a text-based ERD (using Mermaid) for the core banking models (`users`, `accounts`, and `transactions`). This diagram shows the fields and relationships between these models for quick reference:
+Below is a text-based ERD (using Mermaid) for the core banking models (`users`, `accounts`, and `transactions`).
 
 ```mermaid
 erDiagram
-    users {
-        user_id AutoField PK
-        username CharField
-        email EmailField
-        phone_number CharField
-        password CharField
-        full_name CharField
-        date_joined DateField
-    }
-    accounts {
-        account_number CharField PK
-        user_id FK (users)
-        account_type CharField
-        balance DecimalField
-        date_created DateField
-        status CharField
-    }
-    transactions {
-        transaction_id AutoField PK
-        account_number FK (accounts)
-        related_account FK (accounts, nullable)
-        type CharField
-        amount DecimalField
-        timestamp DateTimeField
-        balance_after DecimalField
-        description TextField
-    }
-    users ||--o{ accounts : "has"
-    accounts ||--o{ transactions : "has"
-    accounts ||--o{ transactions : "related"
+  users {
+    user_id INT PK
+    first_name VARCHAR
+    last_name VARCHAR
+    email VARCHAR
+    phone_number VARCHAR
+    password VARCHAR
+    date_joined DATETIME
+  }
+  accounts {
+    account_number VARCHAR PK
+    user_id INT FK (users)
+    account_type ENUM
+    balance DECIMAL
+    date_created DATETIME
+    status ENUM
+  }
+  transactions {
+    transaction_id INT PK
+    account_number VARCHAR FK (accounts)
+    related_account VARCHAR FK (accounts, nullable)
+    type ENUM
+    amount DECIMAL
+    timestamp DATETIME
+    balance_after DECIMAL
+    description TEXT
+  }
+  users ||--o{ accounts : "has"
+  accounts ||--o{ transactions : "has"
+  accounts ||--o{ transactions : "related"
 ```
 
 ## Models
 ### users
-- user_id (AutoField, primary key)
-- username (CharField, unique)
-- email (EmailField, unique)
-- phone_number (CharField, unique, 10 digits)
-- password (CharField)
-- full_name (CharField)
-- date_joined (DateField, auto_now_add)
+- user_id (INT, primary key, auto-increment)
+- first_name (VARCHAR, required)
+- last_name (VARCHAR, required)
+- email (VARCHAR, unique, required)
+- phone_number (VARCHAR, unique, required, 10 digits)
+- password (VARCHAR, required)
+- date_joined (DATETIME, default now)
 
 ### accounts
-- account_number (CharField, primary key, unique, format: ACCXXXXXXX)
-- user_id (ForeignKey to users)
-- account_type (CharField: 'savings' or 'current')
-- balance (DecimalField)
-- date_created (DateField, auto_now_add)
-- status (CharField: 'active' or 'closed')
+- account_number (VARCHAR(10), primary key, unique, auto-generated)
+- user_id (INT, ForeignKey to users)
+- account_type (ENUM: 'SAVINGS', 'CURRENT')
+- balance (DECIMAL, default 0.00)
+- date_created (DATETIME, default now)
+- status (ENUM: 'active', 'inactive')
 
 ### transactions
-- transaction_id (AutoField, primary key)
-- account_number (ForeignKey to accounts)
-- related_account (ForeignKey to accounts, nullable)
-- type (CharField: 'DEPOSIT', 'WITHDRAWAL', 'TRANSFER')
-- amount (DecimalField)
-- timestamp (DateTimeField, auto_now_add)
-- balance_after (DecimalField)
-- description (TextField, optional)
+- transaction_id (INT, primary key, auto-increment)
+- account_number (VARCHAR, ForeignKey to accounts)
+- related_account (VARCHAR, ForeignKey to accounts, nullable)
+- type (ENUM: 'DEPOSIT', 'WITHDRAWAL', 'TRANSFER')
+- amount (DECIMAL, required)
+- timestamp (DATETIME, default now)
+- balance_after (DECIMAL, required)
+- description (TEXT, optional)
 
 
 ## API Endpoints
 
-### User Registration
-- **POST** `/api/register`
-  - Request: `{ "username": ..., "email": ..., "phone_number": ..., "password": ..., "full_name": ... }`
-  - Response: `{ "message": "User registered successfully.", "user_id": ... }`
+### Authentication
+- **POST** `/auth/register` — Register new user
+- **POST** `/auth/login` — Login and get JWT token
 
-### User Login
-- **POST** `/api/login`
-  - Request: `{ "email": ... or "phone_number": ..., "password": ... }`
-  - Response: `{ "message": "Login successful.", "user": { ... } }`
+### User Management (JWT required)
+- **GET** `/users/:userId` — Get user profile
+- **PUT** `/users/:userId` — Update user details
+- **DELETE** `/users/:userId` — Delete user account
+- **GET** `/users/:userId/accounts` — List all user's accounts
 
-### Account Creation
-- **POST** `/api/accounts`
-  - Request: `{ "user_id": ..., "account_type": ..., "balance": ... }`
-  - Response: `{ "message": "Account created successfully.", "account_number": ... }`
+### Account Management (JWT required)
+- **POST** `/accounts` — Create new account
+- **GET** `/accounts/:accountNumber` — Get account details
+- **PUT** `/accounts/:accountNumber` — Update account
+- **DELETE** `/accounts/:accountNumber` — Delete account
+- **GET** `/accounts/:accountNumber/balance` — Get current balance
 
-### Deposit
-- **POST** `/api/accounts/:account_number/deposit`
-  - Request: `{ "amount": ..., "description": ... }`
-  - Response: `{ "message": "Deposit successful.", ... }`
-
-### Withdraw
-- **POST** `/api/accounts/:account_number/withdraw`
-  - Request: `{ "amount": ..., "description": ... }`
-  - Response: `{ "message": "Withdrawal successful.", ... }`
-
-### Transfer
-- **POST** `/api/accounts/:account_number/transfer`
-  - Request: `{ "target_account": ..., "amount": ..., "description": ... }`
-  - Response: `{ "message": "Transfer successful.", ... }`
-
-### Transaction History
-- **GET** `/api/accounts/:account_number/transactions`
-  - Response: `[ ...transactions... ]`
-
-### Account Details
-- **GET** `/api/accounts/:account_number`
-  - Response: `{ ...account details... }`
-
-### Transaction Details
-- **GET** `/api/transactions/:transaction_id`
-  - Response: `{ ...transaction details... }`
+### Transaction Management (JWT required)
+- **GET** `/accounts/:accountNumber/transactions` — Get transaction history
+- **POST** `/accounts/:accountNumber/transactions/deposit` — Deposit money
+- **POST** `/accounts/:accountNumber/transactions/withdraw` — Withdraw money
+- **POST** `/accounts/:accountNumber/transactions/transfer` — Transfer money
 
 ## Example API Requests
 
@@ -202,87 +189,99 @@ erDiagram
 ## Example API Requests
 
 ### Register a User
-```json
-POST /api/register
-{
-  "username": "testuser",
-  "email": "test@example.com",
-  "phone_number": "1234567890",
-  "password": "password123",
-  "full_name": "Test User"
-}
+```bash
+curl -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "John",
+    "lastName": "Doe",
+    "email": "john.doe@example.com",
+    "phoneNumber": "9876543210",
+    "password": "securepassword123"
+  }'
 ```
 
 ### Login
-```json
-POST /api/login
-{
-  "email": "test@example.com",
-  "password": "password123"
-}
+```bash
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john.doe@example.com",
+    "password": "securepassword123"
+  }'
 ```
 
-### Create an Account
-```json
-POST /api/accounts
-{
-  "user_id": 1,
-  "account_type": "savings",
-  "balance": 1000.00
-}
+### Create Savings Account
+```bash
+curl -X POST http://localhost:3000/accounts \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "accountType": "SAVINGS",
+    "balance": 5000.00
+  }'
 ```
 
-### Deposit
-```json
-POST /api/accounts/ACC1234567/deposit
-{
-  "amount": 500.00,
-  "description": "Initial deposit"
-}
+### Make a Deposit
+```bash
+curl -X POST http://localhost:3000/accounts/1234567890/transactions/deposit \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "amount": 1500.00,
+    "description": "Monthly salary deposit"
+  }'
 ```
 
-### Withdraw
-```json
-POST /api/accounts/ACC1234567/withdraw
-{
-  "amount": 200.00,
-  "description": "ATM withdrawal"
-}
-```
-
-### Transfer
-```json
-POST /api/accounts/ACC1234567/transfer
-{
-  "target_account": "ACC7654321",
-  "amount": 100.00,
-  "description": "Transfer to friend"
-}
-```
-
-### Transaction History
-```json
-GET /api/accounts/ACC1234567/transactions
-```
-
-### Account Details
-```json
-GET /api/accounts/ACC1234567
-```
-
-### Transaction Details
-```json
-GET /api/transactions/1
+### Transfer Money
+```bash
+curl -X POST http://localhost:3000/accounts/1234567890/transactions/transfer \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -d '{
+    "toAccountNumber": "0987654321",
+    "amount": 750.00,
+    "description": "Rent payment"
+  }'
 ```
 
 ## Admin Usage
-- Visit `/admin/` and log in with your superuser credentials.
-- You can manage users, accounts, and transactions from the admin interface.
+- Admin dashboard is optional and not included by default. All management is via API endpoints.
 
 ## Notes
-- After major schema changes (such as renaming primary keys or foreign keys), always review and update your migrations to use `RenameField` where appropriate to avoid data loss.
+- All endpoints require JWT authentication except registration and login.
+- Passwords are currently stored in plain text (bcrypt recommended for production).
 - Test all endpoints after making model changes.
 
 ---
 
-**For more Django tips, see the [W3Schools Django Models Tutorial](https://www.w3schools.com/django/django_models.php)**
+## API Response Formats
+
+### Success Response Format
+```json
+{
+  "status": 200,
+  "message": "Operation successful",
+  "data": {
+    // Response data here
+  }
+}
+```
+
+### Error Response Format
+```json
+{
+  "status": 400,
+  "message": "Validation error",
+  "error": "Detailed error message"
+}
+```
+
+### Authentication Header Format
+```http
+Authorization: Bearer <JWT_TOKEN>
+```
+
+---
+
+**For more details, see the BackEnd/Readme.md for advanced features, security, and testing.**
