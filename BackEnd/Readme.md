@@ -477,26 +477,6 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ***
 
-## **📞 API Support & Contact**
-
-### **Development Team**
-- **API Version**: v2.0
-- **Last Updated**: August 19, 2025
-- **Maintenance Status**: Active Development
-- **Support Level**: Full Support
-
-
-
-### **Endpoints Summary**
-| Category | Count | Implementation Status |
-|----------|-------|----------------------|
-| **Authentication** | 2 | ✅ Complete |
-| **User Management** | 4 | ✅ Complete |
-| **Account Management** | 6 | ✅ Complete |
-| **Transaction Processing** | 4 | ✅ Complete |
-| **Total Endpoints** | **16** | **✅ 100% Complete** |
-
-***
 
 ## **🏁 Conclusion**
 
