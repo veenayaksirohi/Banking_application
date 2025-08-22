@@ -1,6 +1,7 @@
+
 # Banking Application
 
-A Django-based banking application with user registration, login, account management, and transaction tracking.
+A full-stack banking application with a Node.js/Express/Prisma backend and a React/Vite frontend. Supports user registration, login, account management, and transaction tracking.
 
 ---
 
@@ -31,42 +32,58 @@ This project is a simple banking system built with Django and Django REST Framew
 ## Project Structure
 ```
 Banking_application/
-  Banksys/
-    Banking_fxn/
-      models.py
-      views.py
-      serializers.py
-      admin.py
-      url.py
-    Banksys/
-      settings.py
-      urls.py
-    db.sqlite3
-    manage.py
+  BackEnd/           # Node.js/Express/Prisma backend
+    src/
+      controllers/
+      routes/
+      models/
+      ...
+    prisma/
+      schema.prisma
+      migrations/
+    package.json
+    server.js
+    ...
+  FrontEnd/          # React/Vite frontend
+    src/
+      components/
+      App.jsx
+      ...
+    package.json
+    vite.config.js
+    ...
   README.md
 ```
 
 ## Setup Instructions
-1. **Clone the repository**
-2. **Create and activate a virtual environment**
-3. **Install dependencies**
-   ```bash
-   pip install django djangorestframework django-extensions pydot graphviz
-   ```
-   (If using uv: `uv pip install django djangorestframework django-extensions pydot graphviz`)
-4. **Apply migrations**
-   ```bash
-   python manage.py makemigrations
-   python manage.py migrate
-   ```
-5. **Create a superuser (for admin access)**
-   ```bash
-   python manage.py createsuperuser
-   ```
-6. **Run the development server**
-   ```bash
-   python manage.py runserver
-   ```
+
+### Backend (Node.js/Express/Prisma)
+1. **Navigate to BackEnd directory**
+2. **Install dependencies**
+  ```bash
+  npm install
+  ```
+3. **Set up environment variables**
+  - Copy `.env.example` to `.env` and fill in your database credentials.
+4. **Run migrations**
+  ```bash
+  npx prisma migrate dev
+  ```
+5. **Start the backend server**
+  ```bash
+  npm start
+  ```
+
+### Frontend (React/Vite)
+1. **Navigate to FrontEnd directory**
+2. **Install dependencies**
+  ```bash
+  npm install
+  ```
+3. **Start the frontend dev server**
+  ```bash
+  npm run dev
+  ```
 
 ## Entity Relationship Diagram (ERD)
 
@@ -134,33 +151,59 @@ erDiagram
 - balance_after (DecimalField)
 - description (TextField, optional)
 
+
 ## API Endpoints
 
 ### User Registration
-- **POST** `/register/`
+- **POST** `/api/register`
   - Request: `{ "username": ..., "email": ..., "phone_number": ..., "password": ..., "full_name": ... }`
   - Response: `{ "message": "User registered successfully.", "user_id": ... }`
 
 ### User Login
-- **POST** `/login/`
+- **POST** `/api/login`
   - Request: `{ "email": ... or "phone_number": ..., "password": ... }`
   - Response: `{ "message": "Login successful.", "user": { ... } }`
 
 ### Account Creation
-- **POST** `/accounts/`
+- **POST** `/api/accounts`
   - Request: `{ "user_id": ..., "account_type": ..., "balance": ... }`
   - Response: `{ "message": "Account created successfully.", "account_number": ... }`
 
-### (Optional) Transactions
-- **POST** `/transactions/`
-  - Request: `{ "account_number": ..., "type": ..., "amount": ..., "related_account": ..., "description": ... }`
-  - Response: `{ "message": "Transaction successful.", ... }`
+### Deposit
+- **POST** `/api/accounts/:account_number/deposit`
+  - Request: `{ "amount": ..., "description": ... }`
+  - Response: `{ "message": "Deposit successful.", ... }`
+
+### Withdraw
+- **POST** `/api/accounts/:account_number/withdraw`
+  - Request: `{ "amount": ..., "description": ... }`
+  - Response: `{ "message": "Withdrawal successful.", ... }`
+
+### Transfer
+- **POST** `/api/accounts/:account_number/transfer`
+  - Request: `{ "target_account": ..., "amount": ..., "description": ... }`
+  - Response: `{ "message": "Transfer successful.", ... }`
+
+### Transaction History
+- **GET** `/api/accounts/:account_number/transactions`
+  - Response: `[ ...transactions... ]`
+
+### Account Details
+- **GET** `/api/accounts/:account_number`
+  - Response: `{ ...account details... }`
+
+### Transaction Details
+- **GET** `/api/transactions/:transaction_id`
+  - Response: `{ ...transaction details... }`
+
+## Example API Requests
+
 
 ## Example API Requests
 
 ### Register a User
 ```json
-POST /register/
+POST /api/register
 {
   "username": "testuser",
   "email": "test@example.com",
@@ -172,7 +215,7 @@ POST /register/
 
 ### Login
 ```json
-POST /login/
+POST /api/login
 {
   "email": "test@example.com",
   "password": "password123"
@@ -181,12 +224,55 @@ POST /login/
 
 ### Create an Account
 ```json
-POST /accounts/
+POST /api/accounts
 {
   "user_id": 1,
   "account_type": "savings",
   "balance": 1000.00
 }
+```
+
+### Deposit
+```json
+POST /api/accounts/ACC1234567/deposit
+{
+  "amount": 500.00,
+  "description": "Initial deposit"
+}
+```
+
+### Withdraw
+```json
+POST /api/accounts/ACC1234567/withdraw
+{
+  "amount": 200.00,
+  "description": "ATM withdrawal"
+}
+```
+
+### Transfer
+```json
+POST /api/accounts/ACC1234567/transfer
+{
+  "target_account": "ACC7654321",
+  "amount": 100.00,
+  "description": "Transfer to friend"
+}
+```
+
+### Transaction History
+```json
+GET /api/accounts/ACC1234567/transactions
+```
+
+### Account Details
+```json
+GET /api/accounts/ACC1234567
+```
+
+### Transaction Details
+```json
+GET /api/transactions/1
 ```
 
 ## Admin Usage
