@@ -1,8 +1,14 @@
 import express from 'express';
 import router from './src/routes/index.js';
+import cors from 'cors';
+import helmet from 'helmet'
+import 'dotenv/config';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+app.use(helmet())
+
+app.use(cors());
 
 // Request logging middleware
 app.use((req, res, next) => {

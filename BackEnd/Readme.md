@@ -304,14 +304,42 @@ INDEX users_phone (phone_number)
 
 ## **🛠️ Technology Stack & Architecture**
 
-### **Backend Architecture**
-- **Runtime**: Node.js 18+
-- **Framework**: Express.js 4.x
-- **Database**: PostgreSQL 14+
-- **ORM**: Prisma 5.x
-- **Authentication**: JWT + Custom middleware
-- **Validation**: Built-in + Prisma validation
-- **Testing**: Custom test framework with node-fetch + chalk
+### **Backend Architecture (what & why)**
+
+- **Runtime — Node.js 18+**
+  - Chosen for its maturity, non-blocking I/O model and large ecosystem. Node is well-suited for API servers that handle many concurrent requests without heavy CPU-bound work.
+
+- **Framework — Express.js 4.x**
+  - Minimal, unopinionated HTTP framework that provides a thin layer for routing and middleware. Express keeps the service simple and easy to reason about while allowing selective use of middleware (auth, validation, CORS, rate-limiting).
+
+- **Database — PostgreSQL 14+**
+  - A proven, ACID-compliant relational database. PostgreSQL provides strong transactional guarantees, rich indexing, and mature tooling — all important for financial consistency and integrity.
+
+- **ORM — Prisma 5.x**
+  - Prisma offers a schema-first workflow, type-safe query builder, and an ergonomic developer experience. It reduces runtime query errors, simplifies migrations, and makes transaction handling explicit and safe.
+
+- **Authentication — JWT (JSON Web Tokens) + custom middleware**
+  - JWTs keep auth stateless on the server and are easy to verify across services. Custom middleware centralizes token validation and access control checks to ensure users can only access their resources.
+
+- **Password handling — bcrypt (recommended to implement)**
+  - Passwords MUST be hashed with bcrypt (or another slow KDF). This README currently notes plain-text in a few places — upgrade to bcrypt with an environment-configured cost factor before production.
+
+- **Validation — Zod / Joi (input validation)**
+  - Server-side input validation prevents bad data from reaching business logic and the database. Zod or Joi provide declarative schemas and helpful error messages.
+
+- **Observability & Logging — structured JSON logs + health endpoints**
+  - Structured logs make it easy to aggregate and query runtime behavior (CloudWatch / ELK). Health/readiness endpoints support orchestration (ECS/K8s) and monitoring.
+
+- **Security middleware — Helmet, CORS config, rate limiting**
+  - Helmet sets secure HTTP headers; strict CORS rules and rate limiting help prevent abuse and reduce attack surface.
+
+- **Testing & CI — unit & integration tests, CI pipeline**
+  - Automated tests validate core flows (auth, transactions). CI runs tests and (optionally) generates Prisma client before building deployable artifacts.
+
+### How these pieces interact (brief)
+
+Requests enter through Express routes -> validation middleware -> authentication middleware -> controller handlers. Controllers use Prisma to perform ACID transactions against PostgreSQL. All mutations (deposit/withdraw/transfer) are executed inside explicit Prisma transactions to guarantee atomicity. Structured logs and health endpoints expose runtime state for monitoring.
+
 
 ### **Project Structure**
 ```
