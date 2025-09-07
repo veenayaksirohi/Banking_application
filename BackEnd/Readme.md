@@ -5,7 +5,7 @@
 This is a personal project demonstrating a simple banking API with user, account, and transaction management. All endpoints are tested and verified.
 
 
-**Base URL:** `http://localhost:3000`
+**Base URL:** `http://localhost:4000`
 **Authentication:** JWT Bearer tokens
 **Database:** PostgreSQL (Prisma ORM)
 
@@ -235,15 +235,18 @@ INDEX (type)
 # Install dependencies
 npm install
 
-# Setup database
+# Setup database (apply migrations interactively)
 npx prisma migrate dev
 
 # Generate Prisma client
 npx prisma generate
 
-# Start server
+# Run locally (ensure PORT matches frontend config)
+export PORT=4000
 npm run dev
 ```
+
+Note: when building a Docker image for this service, generate the Prisma client for the target Linux runtime or add `binaryTargets` to `prisma/schema.prisma` so the generated client contains the correct query engine for the container platform (see the "Docker & Prisma note" later in this README).
 
 
 
@@ -407,6 +410,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 - ❌ **Audit Logging**: Limited transaction audit trails
 - ❌ **Email Notifications**: No email alerts for transactions
 
+- ❌ **Prisma client platform**: When containerizing, ensure the Prisma client includes engines for your container platform (for example `linux-musl-openssl-3.0.x`). If you see a runtime error complaining the client was generated for `windows`, regenerate the client for Linux (run `npx prisma generate` in WSL, a Linux CI runner, or add `binaryTargets` to `prisma/schema.prisma`).
+
 ### **Recommended Enhancements**
 1. **Security Upgrades**:
    - Implement bcrypt password hashing
@@ -425,6 +430,23 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
    - API response caching
 
 ***
+
+## Docker & Prisma note
+
+When building Docker images, Prisma needs the native query engine matching the container OS/architecture. Two recommended approaches:
+
+- Add `binaryTargets` to `prisma/schema.prisma` so generated clients include Linux engines:
+
+```prisma
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+```
+
+- Or run `npx prisma generate` on a Linux environment (WSL, CI runner, or within a build container with network access) and then build the image. This avoids runtime errors like `PrismaClientInitializationError: Query Engine for runtime "linux-musl-openssl-3.0.x" could not be found`.
+
+Either approach makes Docker builds reproducible and avoids platform mismatch issues.
 
 ## **🎯 Production Readiness Checklist**
 
